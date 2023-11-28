@@ -1,22 +1,17 @@
 package org.example;
 
 public class Usuario {
-    Integer idUsuario;
+
     String usuario;
     String password;
     String nombre;
     String email;
 
-    public Usuario(Integer idUsuario, String usuario, String password, String nombre, String email) {
-        this.idUsuario = idUsuario;
+    public Usuario(String usuario, String password, String nombre, String email) {
         this.usuario = usuario;
         this.password = password;
         this.nombre = nombre;
         this.email = email;
-    }
-
-    public Integer getIdUsuario() {
-        return idUsuario;
     }
 
 
