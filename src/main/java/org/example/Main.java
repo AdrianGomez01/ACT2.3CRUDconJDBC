@@ -235,7 +235,7 @@ public class Main {
      * Este método comprueba que no haya un registro con el mismo nombre de usuario o email en la bbdd
      *
      * @param usuario - Objeto de tipo usuario del cual se extraen los datos de nombre de usuario y email para comprobar.
-     * @return
+     * @return - devuelve falso si encuentra un usuario, true si no lo encuentra.
      */
     public static boolean comprobarCampos(Usuario usuario) {
         String nickUsr = usuario.getUsuario();
