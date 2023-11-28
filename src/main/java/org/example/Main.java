@@ -59,7 +59,6 @@ public class Main {
     }
 
     public static void insertarUsuario(Usuario usuario) {
-        Integer idUsuario = usuario.getIdUsuario();
         String nickUsr = usuario.getUsuario();
         String pwd = usuario.getPassword();
         String nombreUsr = usuario.getNombre();
@@ -68,17 +67,15 @@ public class Main {
         try {
             Connection cn = DriverManager.getConnection(urlServidorLocal, user, password);
 
-            comprobarCampos(usuario);
-
-
-
-            String in1 = "INSERT INTO clientes (idusuario, usuario, password, nombre, email) VALUES (?,?,?,?);";
-            try (PreparedStatement ps = cn.prepareStatement(in1)) {
-                ps.setString(1, nickUsr);
-                ps.setString(2, pwd);
-                ps.setString(3, nombreUsr);
-                ps.setString(4, emailUsr);
-                ps.executeUpdate();
+            if (comprobarCampos(usuario)) {
+                String in1 = "INSERT INTO clientes (idusuario, usuario, password, nombre, email) VALUES (?,?,?,?);";
+                try (PreparedStatement ps = cn.prepareStatement(in1)) {
+                    ps.setString(1, nickUsr);
+                    ps.setString(2, pwd);
+                    ps.setString(3, nombreUsr);
+                    ps.setString(4, emailUsr);
+                    ps.executeUpdate();
+                }
             }
 
 
@@ -89,31 +86,14 @@ public class Main {
     }
 
     public static void ModificarUsuario() {
-        Connection cn = null;
         try {
-            cn = DriverManager.getConnection(urlConexion, user, password);
-            cn.setAutoCommit(false);
+            Connection cn = DriverManager.getConnection(urlServidorLocal, user, password);
+            Statement st = cn.createStatement();
 
 
-            cn.commit();
         } catch (SQLException e) {
-            System.err.println("Error al realizar la operación: " + e.getMessage());
-            try {
-                if (cn != null) {
-                    cn.rollback();
-                }
-            } catch (SQLException ex) {
-                ex.printStackTrace();
-            }
+            System.err.println("Error al ejecutar la consulta: " + e.getMessage());
             e.printStackTrace();
-        } finally {
-            try {
-                if (cn != null) {
-                    cn.close();
-                }
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 
@@ -123,10 +103,10 @@ public class Main {
             Connection cn = DriverManager.getConnection(urlServidorLocal, user, password);
             Statement st = cn.createStatement();
 
-            String query = "SELECT * FROM usuarios WHERE idUsuario = ?";
+            String query = "SELECT * FROM usuarios WHERE idUsuario = ?;";
             try (PreparedStatement ps = cn.prepareStatement(query)) {
                 ps.setInt(1, id);
-               ps.executeQuery();
+                ps.executeQuery();
             }
         } catch (SQLException e) {
             System.err.println("Error al ejecutar la consulta: " + e.getMessage());
@@ -146,34 +126,45 @@ public class Main {
         }
     }
 
-    public static boolean comprobarCampos(Usuario usuario){
-        Integer idUsuario = usuario.getIdUsuario();
+    public static boolean comprobarCampos(Usuario usuario) {
         String nickUsr = usuario.getUsuario();
-        String pwd = usuario.getPassword();
-        String nombreUsr = usuario.getNombre();
         String emailUsr = usuario.getEmail();
         try {
             Connection cn = DriverManager.getConnection(urlServidorLocal, user, password);
             Statement st = cn.createStatement();
 
-            String query = "SELECT count(*) FROM usuarios WHERE idUsuario = ? OR WHERE ";
+            String query = "SELECT count(*) FROM usuarios WHERE usuario = ?;";
             try (PreparedStatement ps = cn.prepareStatement(query)) {
-                ps.setInt(1, idUsuario);
-                ps.setString(2, nickUsr);
-                ps.setString(3, pwd);
-                ps.setString(4, nombreUsr);
-                ps.setString(5, emailUsr);
+                ps.setString(1, nickUsr);
                 ResultSet resultado = ps.executeQuery();
                 int numRegistros = 0;
-                while (resultado.next()){
+                while (resultado.next()) {
                     numRegistros = resultado.getInt(1);
                 }
-                if (numRegistros >0){
-                    //Devuelve falso si hay un resgistro ya en la bbdd.
+                if (numRegistros > 0) {
+                    //Devuelve falso si hay un usuario con el mismo nombre en la bbdd.
+                    System.out.println("Error, ya existe un Usuario con el mismo nombre de usuario en la bbdd");
                     return false;
                 }
-                return true;
             }
+
+            String query2 = "SELECT count(*) FROM usuarios WHERE email = ?;";
+            try (PreparedStatement ps = cn.prepareStatement(query2)) {
+                ps.setString(1, emailUsr);
+                ResultSet resultado = ps.executeQuery();
+                int numRegistros = 0;
+                while (resultado.next()) {
+                    numRegistros = resultado.getInt(1);
+                }
+                if (numRegistros > 0) {
+                    //Devuelve falso si hay un usuario con el mismo email en la bbdd.
+                    System.out.println("Error, ya existe un Usuario con el mismo email en la bbdd");
+                    return false;
+                }
+            }
+
+            return true;
+
         } catch (SQLException e) {
             System.err.println("Error al ejecutar la consulta: " + e.getMessage());
             e.printStackTrace();

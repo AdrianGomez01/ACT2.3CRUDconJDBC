@@ -19,9 +19,6 @@ public class Usuario {
         return idUsuario;
     }
 
-    public void setIdUsuario(Integer idUsuario) {
-        this.idUsuario = idUsuario;
-    }
 
     public String getUsuario() {
         return usuario;
